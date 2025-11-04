@@ -1,0 +1,20 @@
+INVOICE
+
+AlphaTech Corp
+101 Alpha St, Chicago, IL 60601
+
+Invoice #: INV-2024-004
+Date: March 12, 2024
+
+Bill To:
+Acme Corporation
+
+Description    Qty    Unit Price    Total
+--------------------------------------------------------
+Consulting Hours    5    $125    $625
+Software License    10    $200    $2000
+Technical Support Hours    8    $150    $1200
+
+Subtotal: $3825
+Tax (10%): $382.5
+TOTAL: $4207.5

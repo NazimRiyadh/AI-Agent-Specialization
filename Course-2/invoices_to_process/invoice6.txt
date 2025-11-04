@@ -1,0 +1,20 @@
+INVOICE
+
+BetaWorks Ltd
+202 Beta Lane, Austin, TX 73301
+
+Invoice #: INV-2024-006
+Date: March 15, 2024
+
+Bill To:
+Acme Corporation
+
+Description    Qty    Unit Price    Total
+--------------------------------------------------------
+Cloud Storage    8    $100    $800
+Technical Support Hours    8    $150    $1200
+Software License    8    $200    $1600
+
+Subtotal: $3600
+Tax (10%): $360.0
+TOTAL: $3960.0
