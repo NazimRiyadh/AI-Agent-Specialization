@@ -1,3 +1,22 @@
+/*
+User Question
+    ↓
+Query Transformation (GPT-4o-mini)
+    ↓
+Generate Embedding (Google text-embedding-004)
+    ↓
+Search Pinecone Vector DB
+    ↓
+Retrieve Top 10 Relevant Chunks
+    ↓
+Generate Answer (GPT-4o) with Context
+    ↓
+Return Response to User
+
+*/
+
+
+
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
@@ -7,7 +26,7 @@ import OpenAI from 'openai';
 
 console.log("Initializing...");
 
-// Initialize outside the function so history persists
+// Use Google embeddings (768 dimensions) to match your index
 const embeddings = new GoogleGenerativeAIEmbeddings({
     apiKey: process.env.GEMINI_API_KEY,
     model: 'text-embedding-004',
@@ -36,12 +55,49 @@ function askQuestion(query) {
     return new Promise(resolve => rl.question(query, resolve));
 }
 
+async function transformQuery(question) {
+    try {
+        // Create a temporary history for context
+        const messages = [
+            {
+                role: "system",
+                content: `You are a query rewriting expert. Based on the provided chat history, rephrase the user's follow-up question into a complete, standalone question that can be understood without the chat history.
+Only output the rewritten question and nothing else.`
+            },
+            ...conversationHistory,
+            {
+                role: "user",
+                content: question
+            }
+        ];
+
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: messages,
+            temperature: 0.3,
+            max_tokens: 200
+        });
+
+        const transformedQuery = completion.choices[0].message.content.trim();
+        console.log(`Original: "${question}"`);
+        console.log(`Transformed: "${transformedQuery}"`);
+        
+        return transformedQuery;
+    } catch (error) {
+        console.error("Error transforming query:", error.message);
+        return question;
+    }
+}
+
 async function chatting(question) {
     try {
         console.log("Processing your question...");
         
-        // Generate embedding for the question
-        const queryVector = await embeddings.embedQuery(question);
+        // Transform the query to make it standalone
+        const transformedQuestion = await transformQuery(question);
+        
+        // Generate embedding for the TRANSFORMED question
+        const queryVector = await embeddings.embedQuery(transformedQuestion);
         console.log("Embedding generated, searching Pinecone...");
 
         // Search Pinecone
@@ -60,7 +116,7 @@ async function chatting(question) {
 
         console.log("Generating response...");
 
-        // Add user message to history
+        // Add ORIGINAL user message to history
         conversationHistory.push({
             role: 'user',
             content: question
@@ -139,3 +195,4 @@ async function main() {
 
 console.log("Starting chat interface...");
 main();
+
